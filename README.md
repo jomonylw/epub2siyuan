@@ -7,7 +7,7 @@
 
 ### 使用方法
 
-- 安装依赖性，测试环境为`python 3.6`
+- 安装依赖`requirements.txt`，测试环境为`python 3.6`
 
 ```terminal
 pip install -r requirements.txt
