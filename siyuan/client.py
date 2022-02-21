@@ -30,7 +30,7 @@ class Client:
 
         res = self._session.post(url=self._root_url + url, params=params, data=data, json=json, headers=headers)
 
-        print('url -> ', res.url, res.status_code)
+        # print('url -> ', res.url, res.status_code)
         # print(res.content)
         if res.status_code == 200:
             return res.json()

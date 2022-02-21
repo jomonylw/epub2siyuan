@@ -1,9 +1,10 @@
-import ebooklib
 import time
+
+import ebooklib
 from bs4 import BeautifulSoup
 from ebooklib import epub
 
-from settings import SIYUAN_TOKEN, SIYUAN_URL
+from settings import SIYUAN_TOKEN, SIYUAN_URL, REPLACE_STR
 from siyuan.client import Client
 
 
@@ -24,7 +25,7 @@ class Epub2note:
             raise Exception
 
         self._imgs_map = {}
-
+        print('upload imgs ...')
         for item in self._book.get_items():
             if item.get_type() == ebooklib.ITEM_IMAGE or item.get_type() == ebooklib.ITEM_COVER:
                 img_name = item.get_name().split('/')[-1]
@@ -91,8 +92,6 @@ class Epub2note:
         self._get_toc_data(toc=self._book.toc, lvl=1)
 
         for item in self._toc_data:
-            # if '#' not in item['href']:
-            #     self._toc_list.append(item)
             if item['href'] in self._doc_list:
                 self._toc_list.append(item)
                 self._doc_list.remove(item['href'])
@@ -139,11 +138,18 @@ class Epub2note:
         imgs = body.find_all(name='img')
         for img in imgs:
             body_str = body_str.replace(img['src'], self._get_alt_img(orgin_img=img['src']))
-        res = self._sy_client.ex_copy(dom=body_str, notebook=self._notebook_id)
         path_note = path + title
         print('gen:', path_note)
-        self._sy_client.create_note(notebook=self._notebook_id, path=path_note, markdown=res['data']['md'])
-        time.sleep(3)
+        res = self._sy_client.ex_copy(dom=body_str, notebook=self._notebook_id)
+        if 'code' in res and res['code'] == 0:
+            md_doc = res['data']['md']
+            # replace str
+            for old, new in REPLACE_STR.items():
+                md_doc = md_doc.replace(old, new)
+            self._sy_client.create_note(notebook=self._notebook_id, path=path_note, markdown=md_doc)
+            time.sleep(3)
+        else:
+            raise Exception
 
     def _gen_book_content(self):
 
