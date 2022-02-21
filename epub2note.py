@@ -70,13 +70,11 @@ class Epub2note:
                 if len(item) > 1:
                     temp = item[0]
                     self._add_toc_data(lvl=lvl, title=temp.title, href=temp.href)
-                    # self._toc_data.append({'lvl': lvl, 'title': temp.title, 'href': temp.href})
                     if isinstance(item[1], list):
                         self._get_toc_data(item[1], lvl=lvl + 1)
             else:
                 temp = item
                 self._add_toc_data(lvl=lvl, title=temp.title, href=temp.href)
-                # self._toc_data.append({'lvl': lvl, 'title': temp.title, 'href': temp.href})
 
     def _gen_toc_list(self):
 
