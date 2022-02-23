@@ -17,6 +17,7 @@ class Epub2note:
         self._toc_data = []
         self._doc_list = []
         self._book = None
+        self._book_name = ''
         self._notebook_id = self._get_notebook_id(notebook_name=notebook_name)
 
     def _upload_imgs(self):
@@ -145,7 +146,7 @@ class Epub2note:
             for old, new in REPLACE_STR.items():
                 md_doc = md_doc.replace(old, new)
             self._sy_client.create_note(notebook=self._notebook_id, path=path_note, markdown=md_doc)
-            time.sleep(3)
+            time.sleep(4)
         else:
             raise Exception
 
@@ -156,12 +157,13 @@ class Epub2note:
 
         prev_lvl = 1
         prev_title = ''
-        path_dict = {1: '/'}
+        root_path = '/' + self._book_name + '/'
+        path_dict = {1: root_path}
 
         for item in self._toc_list:
 
             if item['lvl'] == 1:
-                path_dict = {1: '/'}
+                path_dict = {1: root_path}
             else:
                 if item['lvl'] - prev_lvl == 1:
                     path_dict.update({item['lvl']: path_dict[item['lvl'] - 1] + prev_title + '/'})
@@ -169,7 +171,7 @@ class Epub2note:
             if item['lvl'] in path_dict:
                 path = path_dict[item['lvl']]
             else:
-                path = '/'
+                path = root_path
 
             title = item['title'].replace('/', '')[0:30]
             self._gen_by_href(path=path, title=title, href=item['href'])
@@ -182,15 +184,17 @@ class Epub2note:
             raise Exception
 
         res = self._book.get_metadata('DC', 'title')
-        book_name = res[0][0]
+        self._book_name = res[0][0].replace('/', '')
         img = self._book.get_metadata('OPF', 'cover')[0][-1]["content"]
         cover_image = self._book.get_item_with_id(img)
         alt_img = self._get_alt_img(orgin_img=cover_image.get_name())
+        print('gen cover:', self._book_name)
         if alt_img:
-            self._sy_client.create_note(notebook=self._notebook_id, path='/' + book_name,
+            self._sy_client.create_note(notebook=self._notebook_id, path='/' + self._book_name,
                                         markdown=" ![]({})".format(alt_img))
         else:
-            self._sy_client.create_note(notebook=self._notebook_id, path='/' + book_name, markdown="")
+            self._sy_client.create_note(notebook=self._notebook_id, path='/' + self._book_name, markdown="")
+        time.sleep(4)
 
     def gen_note(self, epub_path):
 
