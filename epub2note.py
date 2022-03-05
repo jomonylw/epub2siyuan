@@ -17,7 +17,7 @@ class Epub2note:
         self._toc_data = []
         self._doc_list = []
         self._book = None
-        self._book_name = ''
+        self._book_name = None
         self._notebook_id = self._get_notebook_id(notebook_name=notebook_name)
 
     def _upload_imgs(self):
@@ -125,6 +125,17 @@ class Epub2note:
         else:
             return None
 
+    def _get_title(self, body_str):
+
+        header = None
+        for clazz in range(1, 7):
+            soup = BeautifulSoup(body_str, features='html.parser')
+            res = soup.find(name='h{}'.format(str(clazz)))
+            if res:
+                header = res.get_text()
+                break
+        return header
+
     def _gen_by_href(self, path, title, href):
 
         if not self._book:
@@ -135,8 +146,16 @@ class Epub2note:
         body = soup.find(name='body')
         body_str = str(body)
         imgs = body.find_all(name='img')
+
         for img in imgs:
-            body_str = body_str.replace(img['src'], self._get_alt_img(orgin_img=img['src']))
+            if self._get_alt_img(orgin_img=img['src']):
+                body_str = body_str.replace(img['src'], self._get_alt_img(orgin_img=img['src']))
+
+        if 'not_in_toc_' in title:
+            header = self._get_title(body_str=body_str)
+            if header:
+                title = header
+
         path_note = path + title
         print('gen:', path_note)
         res = self._sy_client.ex_copy(dom=body_str, notebook=self._notebook_id)
@@ -154,6 +173,9 @@ class Epub2note:
 
         if not self._book:
             raise Exception
+
+        if not self._book_name:
+            self._book_name = 'Book'
 
         prev_lvl = 1
         prev_title = ''
