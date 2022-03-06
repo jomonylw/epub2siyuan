@@ -195,7 +195,7 @@ class Epub2note:
             else:
                 path = root_path
 
-            title = item['title'].replace('/', '')[0:30]
+            title = item['title'].replace('/', '')
             self._gen_by_href(path=path, title=title, href=item['href'])
             prev_lvl = item['lvl']
             prev_title = title
