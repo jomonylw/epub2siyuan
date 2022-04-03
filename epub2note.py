@@ -15,7 +15,7 @@ class Epub2note:
         self._imgs_map = {}
         self._toc_list = []
         self._toc_data = []
-        self._doc_list = []
+        self._doc_dict = {}
         self._book = None
         self._book_name = None
         self._notebook_id = self._get_notebook_id(notebook_name=notebook_name)
@@ -91,28 +91,38 @@ class Epub2note:
         self._get_toc_data(toc=self._book.toc, lvl=1)
 
         for item in self._toc_data:
-            if item['href'] in self._doc_list:
-                self._toc_list.append(item)
-                self._doc_list.remove(item['href'])
+            if item['href'] in self._doc_dict:
+                if not self._doc_dict[item['href']]:
+                    self._doc_dict.update({item['href']: item})
 
-        for item in self._doc_list:
+        prev_item = None
+        for key, item in self._doc_dict.items():
+            if not item:
+                if '/' in key:
+                    title = key.split('/')[-1]
+                else:
+                    title = key
+                if prev_item:
+                    if 'not_in_toc_' in prev_item['title']:
+                        lvl = prev_item['lvl']
+                    else:
+                        lvl = prev_item['lvl'] + 1
+                else:
+                    lvl = 1
+                item = {'lvl': lvl, 'title': 'not_in_toc_' + title, 'href': key}
 
-            if '/' in item:
-                title = item.split('/')[-1]
-            else:
-                title = item
-
-            self._toc_list.append({'lvl': 1, 'title': 'not_in_toc_' + title, 'href': item})
+            self._toc_list.append(item)
+            prev_item = item
 
     def _get_all_doc(self):
 
         if not self._book:
             raise Exception
 
-        self._doc_list = []
+        self._doc_dict = {}
         for item in self._book.get_items():
             if item.get_type() == ebooklib.ITEM_DOCUMENT:
-                self._doc_list.append(item.get_name())
+                self._doc_dict.update({item.get_name(): None})
 
     def _get_alt_img(self, orgin_img):
 
