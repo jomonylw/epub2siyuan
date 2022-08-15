@@ -217,16 +217,17 @@ class Epub2note:
 
         res = self._book.get_metadata('DC', 'title')
         self._book_name = res[0][0].replace('/', '')
-        img = self._book.get_metadata('OPF', 'cover')[0][-1]["content"]
-        cover_image = self._book.get_item_with_id(img)
-        alt_img = self._get_alt_img(orgin_img=cover_image.get_name())
-        print('gen cover:', self._book_name)
-        if alt_img:
-            self._sy_client.create_note(notebook=self._notebook_id, path='/' + self._book_name,
-                                        markdown=" ![]({})".format(alt_img))
-        else:
-            self._sy_client.create_note(notebook=self._notebook_id, path='/' + self._book_name, markdown="")
-        time.sleep(4)
+        if self._book.get_metadata('OPF', 'cover'):
+            img = self._book.get_metadata('OPF', 'cover')[0][-1]["content"]
+            cover_image = self._book.get_item_with_id(img)
+            alt_img = self._get_alt_img(orgin_img=cover_image.get_name())
+            print('gen cover:', self._book_name)
+            if alt_img:
+                self._sy_client.create_note(notebook=self._notebook_id, path='/' + self._book_name,
+                                            markdown=" ![]({})".format(alt_img))
+            else:
+                self._sy_client.create_note(notebook=self._notebook_id, path='/' + self._book_name, markdown="")
+            time.sleep(4)
 
     def gen_note(self, epub_path):
 
