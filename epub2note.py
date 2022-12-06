@@ -19,6 +19,8 @@ class Epub2note:
         self._book = None
         self._book_name = None
         self._notebook_id = self._get_notebook_id(notebook_name=notebook_name)
+        self._merge = False
+        self._merge_doc = b''
 
     def _upload_imgs(self):
 
@@ -85,6 +87,11 @@ class Epub2note:
         if not self._book.toc:
             raise Exception
 
+        if self._merge:
+            self._toc_list.clear()
+            self._toc_list.append({'lvl': 1, 'title': '内容', 'href': None})
+            return
+
         self._toc_data = []
         self._toc_list = []
 
@@ -123,6 +130,8 @@ class Epub2note:
         for item in self._book.get_items():
             if item.get_type() == ebooklib.ITEM_DOCUMENT:
                 self._doc_dict.update({item.get_name(): None})
+                if self._merge:
+                    self._merge_doc = self._merge_doc + item.get_content()
 
     def _get_alt_img(self, orgin_img):
 
@@ -151,8 +160,12 @@ class Epub2note:
         if not self._book:
             raise Exception
 
-        res = self._book.get_item_with_href(href)
-        soup = BeautifulSoup(res.get_content(), features='html.parser')
+        if href:
+            res = self._book.get_item_with_href(href).get_content()
+        else:
+            res = b'<body>' + self._merge_doc + b'</body>'
+
+        soup = BeautifulSoup(res, features='html.parser')
         body = soup.find(name='body')
         body_str = str(body)
         imgs = body.find_all(name='img')
@@ -229,8 +242,8 @@ class Epub2note:
                 self._sy_client.create_note(notebook=self._notebook_id, path='/' + self._book_name, markdown="")
             time.sleep(4)
 
-    def gen_note(self, epub_path):
-
+    def gen_note(self, epub_path, merge=False):
+        self._merge = merge
         self._book = epub.read_epub(epub_path)
         self._get_all_doc()
         self._gen_toc_list()

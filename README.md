@@ -28,7 +28,10 @@ SIYUAN_TOKEN = ''
 from epub2note import Epub2note
 
 note = Epub2note(notebook_name='我的图书') # epub 导入笔记本名称，如不存在，则会自动新建
-note.gen_note(epub_path='xxx.epub') # epub 电子书路径
+note.gen_note(epub_path='xxx.epub',merge=False) # epub_path 电子书路径
+# merge
+#   False   表示按目录结构分开生成文件
+#   True    整本书只生成一个文件
 
 ```
 
