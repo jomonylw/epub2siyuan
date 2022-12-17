@@ -127,6 +127,7 @@ class Epub2note:
             raise Exception
 
         self._doc_dict = {}
+        self._merge_doc = b''
         for item in self._book.get_items():
             if item.get_type() == ebooklib.ITEM_DOCUMENT:
                 self._doc_dict.update({item.get_name(): None})
