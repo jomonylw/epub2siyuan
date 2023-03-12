@@ -138,10 +138,12 @@ class Epub2note:
 
         if not orgin_img:
             return None
-
         orgin_img_name = orgin_img.split('/')[-1]
         if orgin_img_name in self._imgs_map:
-            return self._imgs_map[orgin_img_name]
+            if 'assets/' in self._imgs_map[orgin_img_name]:
+                return 'assets/{}'.format(self._imgs_map[orgin_img_name].split('assets/')[-1])
+            else:
+                return None
         else:
             return None
 
